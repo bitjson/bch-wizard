@@ -1,0 +1,549 @@
+<!-- Based on Forth Wizard by Peter Sovietov: http://sovietov.com/app/forthwiz.html, extended for BCH by bitjson -->
+<html>
+  <head>
+    <title>Bitcoin Cash VM Stack Wizard</title>
+  </head>
+  <body>
+    <script language="JavaScript">
+      dup.oname = 'OP_DUP';
+      drop.oname = 'OP_DROP';
+      swap.oname = 'OP_SWAP';
+      over.oname = 'OP_OVER';
+      rot.oname = 'OP_ROT';
+      toalt.oname = 'OP_TOALTSTACK';
+      fromalt.oname = 'OP_FROMALTSTACK';
+      dup2.oname = 'OP_2DUP';
+      drop2.oname = 'OP_2DROP';
+      swap2.oname = 'OP_2SWAP';
+      over2.oname = 'OP_2OVER';
+      rot2.oname = 'OP_2ROT';
+      nip.oname = 'OP_NIP';
+      tuck.oname = 'OP_TUCK';
+      dup3.oname = 'OP_3DUP';
+      // pick0 == dup;
+      // pick1 == over;
+      pick2.oname = '<2> OP_PICK';
+      pick3.oname = '<3> OP_PICK';
+      pick4.oname = '<4> OP_PICK';
+      pick5.oname = '<5> OP_PICK';
+      // roll1 == swap
+      // roll2 == rot
+      roll3.oname = '<3> OP_ROLL';
+      roll4.oname = '<4> OP_ROLL';
+      roll5.oname = '<5> OP_ROLL';
+
+      var Summary = '';
+
+      var Code = [0];
+      var Cl = 5;
+
+      var Ops = [];
+
+      var Stack_in = [];
+      var Stack_out = [];
+      var Suniq = [];
+      var Stack, Rstack, Astack, Arstack;
+
+      function pick(i) {
+        return Stack[Stack.length - i];
+      }
+
+      function rpick(i) {
+        return Rstack[Rstack.length - i];
+      }
+
+      function dup() {
+        if (Stack.length < 1) return 0;
+
+        Stack.push(pick(1));
+        return 1;
+      }
+
+      function drop() {
+        if (Stack.length < 1) return 0;
+
+        Stack.pop();
+
+        if (badop()) return 0;
+
+        return 1;
+      }
+
+      function swap() {
+        if (Stack.length < 2) return 0;
+
+        var n1 = Stack.pop();
+        var n2 = Stack.pop();
+
+        Stack.push(n1);
+        Stack.push(n2);
+        return 1;
+      }
+
+      function over() {
+        if (Stack.length < 2) return 0;
+
+        Stack.push(pick(2));
+        return 1;
+      }
+
+      function rot() {
+        if (Stack.length < 3) return 0;
+
+        var n1 = Stack.pop();
+        var n2 = Stack.pop();
+        var n3 = Stack.pop();
+
+        Stack.push(n2);
+        Stack.push(n1);
+        Stack.push(n3);
+        return 1;
+      }
+
+      function toalt() {
+        if (Stack.length < 1) return 0;
+
+        Rstack.push(Stack.pop());
+        return 1;
+      }
+
+      function fromalt() {
+        if (Rstack.length < 1) return 0;
+
+        Stack.push(Rstack.pop());
+        return 1;
+      }
+
+      function dup2() {
+        if (Stack.length < 2) return 0;
+
+        Stack.push(pick(2));
+        Stack.push(pick(2));
+        return 1;
+      }
+
+      function dup3() {
+        if (Stack.length < 3) return 0;
+
+        Stack.push(pick(3));
+        Stack.push(pick(3));
+        Stack.push(pick(3));
+        return 1;
+      }
+
+      function drop2() {
+        if (Stack.length < 2) return 0;
+
+        Stack.pop();
+        Stack.pop();
+
+        if (badop()) return 0;
+
+        return 1;
+      }
+
+      function swap2() {
+        if (Stack.length < 4) return 0;
+
+        var n1 = Stack.pop();
+        var n2 = Stack.pop();
+        var n3 = Stack.pop();
+        var n4 = Stack.pop();
+
+        Stack.push(n2);
+        Stack.push(n1);
+        Stack.push(n4);
+        Stack.push(n3);
+        return 1;
+      }
+
+      function over2() {
+        if (Stack.length < 4) return 0;
+
+        Stack.push(pick(4));
+        Stack.push(pick(4));
+        return 1;
+      }
+
+      function rot2() {
+        if (Stack.length < 6) return 0;
+
+        var n1 = Stack.pop();
+        var n2 = Stack.pop();
+        var n3 = Stack.pop();
+        var n4 = Stack.pop();
+        var n5 = Stack.pop();
+        var n6 = Stack.pop();
+
+        Stack.push(n4);
+        Stack.push(n3);
+        Stack.push(n2);
+        Stack.push(n1);
+        Stack.push(n6);
+        Stack.push(n5);
+        return 1;
+      }
+
+      function nip() {
+        if (Stack.length < 2) return 0;
+
+        var n = Stack.pop();
+        Stack.pop();
+
+        Stack.push(n);
+
+        if (badop()) return 0;
+
+        return 1;
+      }
+
+      function tuck() {
+        if (Stack.length < 2) return 0;
+
+        var n1 = Stack.pop();
+        var n2 = Stack.pop();
+
+        Stack.push(n1);
+        Stack.push(n2);
+        Stack.push(n1);
+        return 1;
+      }
+
+      function mrot() {
+        if (Stack.length < 3) return 0;
+
+        var n1 = Stack.pop();
+        var n2 = Stack.pop();
+        var n3 = Stack.pop();
+
+        Stack.push(n1);
+        Stack.push(n3);
+        Stack.push(n2);
+        return 1;
+      }
+
+      function rfetch() {
+        if (Rstack.length < 1) return 0;
+
+        Stack.push(rpick(1));
+        return 1;
+      }
+
+      function toalt2() {
+        if (Stack.length < 2) return 0;
+
+        var n1 = Stack.pop();
+        var n2 = Stack.pop();
+
+        Rstack.push(n2);
+        Rstack.push(n1);
+        return 1;
+      }
+
+      function fromalt2() {
+        if (Rstack.length < 2) return 0;
+
+        var n1 = Rstack.pop();
+        var n2 = Rstack.pop();
+
+        Stack.push(n2);
+        Stack.push(n1);
+        return 1;
+      }
+
+      function rfetch2() {
+        if (Rstack.length < 2) return 0;
+
+        Stack.push(rpick(2));
+        Stack.push(rpick(1));
+        return 1;
+      }
+
+      function pick2() {
+        if (Stack.length < 3) return 0;
+
+        Stack.push(pick(3));
+        return 1;
+      }
+
+      function pick3() {
+        if (Stack.length < 4) return 0;
+
+        Stack.push(pick(4));
+        return 1;
+      }
+
+      function pick4() {
+        if (Stack.length < 5) return 0;
+
+        Stack.push(pick(5));
+        return 1;
+      }
+
+      function pick5() {
+        if (Stack.length < 6) return 0;
+
+        Stack.push(pick(6));
+        return 1;
+      }
+
+      function roll3() {
+        if (Stack.length < 4) return 0;
+
+        var n1 = Stack.pop();
+        var n2 = Stack.pop();
+        var n3 = Stack.pop();
+        var n4 = Stack.pop();
+
+        Stack.push(n3);
+        Stack.push(n2);
+        Stack.push(n1);
+        Stack.push(n4);
+        return 1;
+      }
+
+      function roll4() {
+        if (Stack.length < 5) return 0;
+
+        var n1 = Stack.pop();
+        var n2 = Stack.pop();
+        var n3 = Stack.pop();
+        var n4 = Stack.pop();
+        var n5 = Stack.pop();
+
+        Stack.push(n4);
+        Stack.push(n3);
+        Stack.push(n2);
+        Stack.push(n1);
+        Stack.push(n5);
+        return 1;
+      }
+
+      function roll5() {
+        if (Stack.length < 6) return 0;
+
+        var n1 = Stack.pop();
+        var n2 = Stack.pop();
+        var n3 = Stack.pop();
+        var n4 = Stack.pop();
+        var n5 = Stack.pop();
+        var n6 = Stack.pop();
+
+        Stack.push(n5);
+        Stack.push(n4);
+        Stack.push(n3);
+        Stack.push(n2);
+        Stack.push(n1);
+        Stack.push(n6);
+        return 1;
+      }
+
+      function next_code() {
+        var i = Code.length - 1;
+        var max = Ops.length - 1;
+
+        Code[i]++;
+
+        while (Code[i] > max) {
+          Code[i] = 0;
+
+          if (i == 0) Code.unshift(0);
+          else Code[--i]++;
+        }
+      }
+
+      function skip_code(n) {
+        var max = Ops.length - 1;
+
+        for (var i = n + 1; i < Code.length; i++) Code[i] = max;
+      }
+
+      function smatch(a1, a2) {
+        if (a1.length != a2.length) return 0;
+
+        for (var i = 0; i < a1.length; i++) {
+          if (a1[i] != a2[i]) return 0;
+        }
+
+        return 1;
+      }
+
+      function noop(n) {
+        if (!Rstack.length && smatch(Stack, Stack_in)) return 1;
+
+        for (var i = 0; i < n; i++) {
+          if (smatch(Astack[i], Stack) && smatch(Arstack[i], Rstack)) return 1;
+        }
+
+        return 0;
+      }
+
+      function instack(s, n) {
+        for (var i = 0; i < s.length; i++) {
+          if (s[i] == n) return 1;
+        }
+
+        return 0;
+      }
+
+      function sunique() {
+        Suniq = [];
+
+        for (var i = 0; i < Stack_out.length; i++) {
+          if (!instack(Suniq, Stack_out[i])) Suniq.push(Stack_out[i]);
+        }
+      }
+
+      function badop() {
+        for (var i = 0; i < Suniq.length; i++) {
+          if (!instack(Stack, Suniq[i]) && !instack(Rstack, Suniq[i])) return 1;
+        }
+
+        return 0;
+      }
+
+      function good_code() {
+        Stack = Stack_in.slice(0, Stack_in.length);
+        Rstack = [];
+
+        Astack = [];
+        Arstack = [];
+
+        for (var i = 0; i < Code.length; i++) {
+          if (!Ops[Code[i]]() || noop(i)) {
+            skip_code(i);
+            return 0;
+          }
+
+          Astack.push(Stack.slice(0, Stack.length));
+          Arstack.push(Rstack.slice(0, Rstack.length));
+        }
+
+        return !Rstack.length && smatch(Stack, Stack_out);
+      }
+
+      function text_code() {
+        var text = '';
+
+        for (var i in Code) text += Ops[Code[i]].oname + ' ';
+
+        return text;
+      }
+
+      function result() {
+        Summary += text_code() + '\n';
+
+        next_code();
+
+        return Summary;
+      }
+
+      function solve() {
+        Summary = '';
+
+        Code = [0];
+        Cl = parseInt(document.f.cl.value);
+
+        Stack_in = document.f.sin.value;
+        Stack_out = document.f.sout.value;
+        Stack_in = Stack_in.replace(/^\s+/, '');
+        Stack_out = Stack_out.replace(/^\s+/, '');
+        Stack_in = Stack_in.replace(/\s+$/, '');
+        Stack_out = Stack_out.replace(/\s+$/, '');
+        Stack_in = Stack_in.length ? Stack_in.split(/\s+/) : [];
+        Stack_out = Stack_out.length ? Stack_out.split(/\s+/) : [];
+
+        fill_ops();
+
+        sunique();
+
+        return more();
+      }
+
+      function more() {
+        if (Ops.length) {
+          while (Code.length <= Cl) {
+            if (good_code()) return result();
+            next_code();
+          }
+        }
+
+        return Summary + 'no solutions';
+      }
+
+      function xor_ops() {
+        var o = document.ops;
+
+        for (var i = 0; i < o.elements.length; i++) {
+          eval('o.' + o[i].name + '.checked ^= 1;');
+        }
+      }
+
+      function fill_ops() {
+        var o = document.ops;
+        Ops = [];
+
+        for (var i = 0; i < o.elements.length; i++) {
+          if (o[i].checked) Ops.push(eval(o[i].name));
+        }
+      }
+    </script>
+
+    <h2>Bitcoin Cash VM Stack Wizard</h2>
+
+    <form name="ops">
+      <input type="checkbox" name="dup" checked />OP_DUP
+      <input type="checkbox" name="dup2" checked />OP_2DUP
+      <input type="checkbox" name="dup3" checked />OP_3DUP
+      <input type="checkbox" name="nip" checked />OP_NIP
+      <input type="checkbox" name="tuck" checked />OP_TUCK
+      <input type="checkbox" name="drop" checked />OP_DROP
+      <input type="checkbox" name="drop2" checked />OP_2DROP
+      <br />
+      <input type="checkbox" name="swap" checked />OP_SWAP
+      <input type="checkbox" name="swap2" checked />OP_2SWAP
+      <input type="checkbox" name="over" checked />OP_OVER
+      <input type="checkbox" name="over2" checked />OP_2OVER
+      <input type="checkbox" name="rot" checked />OP_ROT
+      <input type="checkbox" name="rot2" checked />OP_2ROT
+      <br />
+      <input type="checkbox" name="toalt" checked />OP_TOALTSTACK
+      <input type="checkbox" name="fromalt" checked />OP_FROMALTSTACK
+      <br />
+      <input type="checkbox" name="pick2" checked />&lt;2&gt; OP_PICK
+      <input type="checkbox" name="pick3" checked />&lt;3&gt; OP_PICK
+      <input type="checkbox" name="pick4" checked />&lt;4&gt; OP_PICK
+      <input type="checkbox" name="pick5" checked />&lt;5&gt; OP_PICK
+      <br />
+      <input type="checkbox" name="roll3" checked />&lt;3&gt; OP_ROLL
+      <input type="checkbox" name="roll4" checked />&lt;4&gt; OP_ROLL
+      <input type="checkbox" name="roll5" checked />&lt;5&gt; OP_ROLL
+    </form>
+    <form name="f">
+      max operations: <input type="text" name="cl" value="5" />
+      <input type="button" value="flip all opcodes" onclick="xor_ops();" />
+      <br />
+      <br />
+      (<input type="text" name="sin" value="a b c d" /> --
+      <input type="text" name="sout" value="b a d c" />)
+      <input
+        type="button"
+        name="busy"
+        value="solve"
+        onclick="document.f.busy.value = 'busy'; document.f.out.value = solve(); document.f.busy.value = 'solve';"
+      />
+      <input
+        type="button"
+        value="more"
+        onclick="document.f.busy.value = 'busy'; document.f.out.value = more(); document.f.busy.value = 'solve';"
+      />
+      <input
+        type="button"
+        value="clear"
+        onclick="document.f.out.value = ''; document.f.sin.value = ''; document.f.sout.value = '';"
+      />
+      <br /><br />
+      <textarea name="out" cols="80" rows="25"></textarea>
+    </form>
+  </body>
+</html>
