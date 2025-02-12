@@ -1,27 +1,175 @@
 <!-- Based on Forth Wizard by Peter Sovietov: http://sovietov.com/app/forthwiz.html, extended for BCH by bitjson -->
 <html>
   <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Bitcoin Cash VM Stack Wizard</title>
-    <meta name="description" content="Bitcoin Cash VM Stack Wizard helps optimize stack operations by finding efficient opcode sequences to transform an initial stack into a target state.">
-    <link rel="canonical" href="https://bitjson.github.io/bch-wizard/">
+    <meta
+      name="description"
+      content="Find the optimal CashAssembly to transform an initial stack state into a target stack state."
+    />
+    <link rel="canonical" href="https://bitjson.github.io/bch-wizard/" />
 
     <!-- OpenGraph metadata -->
-    <meta property="og:title" content="Bitcoin Cash VM Stack Wizard">
-    <meta property="og:description" content="Bitcoin Cash VM Stack Wizard helps optimize stack operations by finding efficient opcode sequences to transform an initial stack into a target state.">
-    <meta property="og:image" content="https://repository-images.githubusercontent.com/931131937/bc2cb143-4404-486d-94c8-866a16dd4cbe">
-    <meta property="og:url" content="https://bitjson.github.io/bch-wizard/">
-    <meta property="og:type" content="website">
-    <meta property="og:site_name" content="Bitcoin Cash VM Stack Wizard">
-    <meta property="og:image:alt" content="Screenshot of the Bitcoin Cash VM Stack Wizard interface.">
+    <meta property="og:title" content="Bitcoin Cash VM Stack Wizard" />
+    <meta
+      property="og:description"
+      content="Find the optimal CashAssembly to transform an initial stack state into a target stack state."
+    />
+    <meta
+      property="og:image"
+      content="https://repository-images.githubusercontent.com/931131937/bc2cb143-4404-486d-94c8-866a16dd4cbe"
+    />
+    <meta property="og:url" content="https://bitjson.github.io/bch-wizard/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Bitcoin Cash VM Stack Wizard" />
+    <meta
+      property="og:image:alt"
+      content="Screenshot of the Bitcoin Cash VM Stack Wizard interface."
+    />
 
     <!-- Twitter Card metadata -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Bitcoin Cash VM Stack Wizard">
-    <meta name="twitter:description" content="Bitcoin Cash VM Stack Wizard helps optimize stack operations by finding efficient opcode sequences to transform an initial stack into a target state.">
-    <meta name="twitter:image" content="https://repository-images.githubusercontent.com/931131937/bc2cb143-4404-486d-94c8-866a16dd4cbe">
-    <meta name="twitter:site" content="@bitjson">
-    <meta name="twitter:image:alt" content="Screenshot of the Bitcoin Cash VM Stack Wizard interface.">
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Bitcoin Cash VM Stack Wizard" />
+    <meta
+      name="twitter:description"
+      content="Find the optimal CashAssembly to transform an initial stack state into a target stack state."
+    />
+    <meta
+      name="twitter:image"
+      content="https://repository-images.githubusercontent.com/931131937/bc2cb143-4404-486d-94c8-866a16dd4cbe"
+    />
+    <meta name="twitter:site" content="@bitjson" />
+    <meta
+      name="twitter:image:alt"
+      content="Screenshot of the Bitcoin Cash VM Stack Wizard interface."
+    />
+
+    <!-- Import Bitauth IDE fonts: Fira Sans (400 & 700) and Fira Mono (400) -->
+    <link
+      href="https://fonts.googleapis.com/css?family=Fira+Sans:400,700|Fira+Mono:400&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      body {
+        margin: 0;
+        background-color: #1d2023;
+        color: #f5f8fa;
+        font-family: 'Fira Sans', sans-serif;
+      }
+      .container {
+        max-width: 800px;
+        margin: 1em auto;
+        padding: 2rem;
+        background-color: #2f343c;
+        border-radius: 6px;
+      }
+      h1 {
+        font-weight: 700;
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        color: #ffffff;
+      }
+      p {
+        line-height: 1.5em;
+      }
+      form {
+        margin-bottom: 1rem;
+      }
+      label {
+        color: #f0f0f0;
+        font-weight: 600;
+      }
+      input[type='checkbox'] {
+        transform: scale(1.2);
+        margin-right: 0.25rem;
+        vertical-align: middle;
+      }
+      input[type='text'],
+      textarea {
+        background-color: #1d2023;
+        color: #f5f8fa;
+        border: 1px solid #555;
+        border-radius: 4px;
+        padding: 0.4rem;
+        font: 1rem 'Fira Sans', sans-serif;
+      }
+      input[type='text']:focus,
+      textarea:focus {
+        outline: none;
+        border-color: #137cbd;
+      }
+      input[type='button'],
+      input[type='submit'] {
+        background-color: #394b59;
+        color: #f5f8fa;
+        border: none;
+        border-radius: 3px;
+        padding: 0.5rem 1rem;
+        font: 1rem 'Fira Sans', sans-serif;
+        cursor: pointer;
+        margin: 0.25rem 0.5rem 0.25rem 0;
+      }
+      input[type='button']:hover,
+      input[type='submit']:hover {
+        background-color: #4a5a67;
+      }
+      .stack {
+        display: inline-block;
+        margin: 0.3em 0.5em;
+      }
+      .checkbox-row {
+        margin-bottom: 1rem;
+        display: flex;
+        flex-wrap: wrap;
+      }
+      .checkbox-box {
+        display: inline-flex;
+        align-items: center;
+        background-color: #394b59;
+        border-radius: 6px;
+        padding: 0.4rem 0.6rem;
+        margin: 0.3rem;
+        cursor: pointer;
+      }
+      .checkbox-box:hover {
+        background-color: #4a5a67;
+      }
+      .checkbox-box input[type='checkbox'] {
+        margin-right: 0.4rem;
+        transform: scale(1.2);
+      }
+      .checkbox-row {
+        margin-bottom: 1rem;
+        display: flex;
+        flex-wrap: wrap;
+      }
+      .checkbox-row input {
+        margin-right: 0.5rem;
+        margin-bottom: 0.5rem;
+      }
+      textarea {
+        width: 100%;
+        margin-top: 1rem;
+      }
+      small,
+      a {
+        color: #b0b0b0;
+      }
+      small {
+        display: inline-block;
+        margin-top: 1rem;
+      }
+      a {
+        color: #8abbff;
+        text-decoration: none;
+      }
+      a:hover {
+        text-decoration: underline;
+        color: #ffffff;
+      }
+    </style>
   </head>
   <body>
     <script language="JavaScript">
@@ -462,7 +610,7 @@
         Summary = '';
 
         Code = [0];
-        Cl = parseInt(document.f.cl.value);
+        Cl = parseInt(document.ops.cl.value);
 
         Stack_in = document.f.sin.value;
         Stack_out = document.f.sout.value;
@@ -509,62 +657,140 @@
       }
     </script>
 
-    <h2>Bitcoin Cash VM Stack Wizard</h2>
+    <div class="container">
+      <h1>Bitcoin Cash VM Stack Wizard</h1>
+      <p>
+        Find the optimal CashAssembly to transform
+        an initial stack state into a target stack state. To experiment with CashAssembly and Bitcoin Cash contract development, try
+        <a href="https://ide.bitauth.com/">Bitauth IDE</a>.
+      </p>
+      <form name="f">
+        <div class="form-row">
+          <label class="stack">
+            Initial stack:
+            <input type="text" name="sin" value="a b c d" />
+          </label>
+          <label class="stack">
+            Target stack:
+            <input type="text" name="sout" value="b a d c" />
+          </label>
+          <div class="stack">
+            <input
+              type="button"
+              name="busy"
+              value="Solve"
+              onclick="document.f.busy.value = 'busy'; document.f.out.value = solve(); document.f.busy.value = 'Solve';"
+            />
+            <input
+              type="button"
+              value="More"
+              onclick="document.f.busy.value = 'busy'; document.f.out.value = more(); document.f.busy.value = 'Solve';"
+            />
+          </div>
+        </div>
 
-    <form name="ops">
-      <input type="checkbox" name="dup" checked />OP_DUP
-      <input type="checkbox" name="dup2" checked />OP_2DUP
-      <input type="checkbox" name="dup3" checked />OP_3DUP
-      <input type="checkbox" name="nip" checked />OP_NIP
-      <input type="checkbox" name="tuck" checked />OP_TUCK
-      <input type="checkbox" name="drop" checked />OP_DROP
-      <input type="checkbox" name="drop2" checked />OP_2DROP
-      <br />
-      <input type="checkbox" name="swap" checked />OP_SWAP
-      <input type="checkbox" name="swap2" checked />OP_2SWAP
-      <input type="checkbox" name="over" checked />OP_OVER
-      <input type="checkbox" name="over2" checked />OP_2OVER
-      <input type="checkbox" name="rot" checked />OP_ROT
-      <input type="checkbox" name="rot2" checked />OP_2ROT
-      <br />
-      <input type="checkbox" name="toalt" checked />OP_TOALTSTACK
-      <input type="checkbox" name="fromalt" checked />OP_FROMALTSTACK
-      <br />
-      <input type="checkbox" name="pick2" checked />&lt;2&gt; OP_PICK
-      <input type="checkbox" name="pick3" checked />&lt;3&gt; OP_PICK
-      <input type="checkbox" name="pick4" checked />&lt;4&gt; OP_PICK
-      <input type="checkbox" name="pick5" checked />&lt;5&gt; OP_PICK
-      <br />
-      <input type="checkbox" name="roll3" checked />&lt;3&gt; OP_ROLL
-      <input type="checkbox" name="roll4" checked />&lt;4&gt; OP_ROLL
-      <input type="checkbox" name="roll5" checked />&lt;5&gt; OP_ROLL
-    </form>
-    <form name="f">
-      max operations: <input type="text" name="cl" value="5" />
-      <input type="button" value="flip all opcodes" onclick="xor_ops();" />
-      <br />
-      <br />
-      (<input type="text" name="sin" value="a b c d" /> --
-      <input type="text" name="sout" value="b a d c" />)
-      <input
-        type="button"
-        name="busy"
-        value="solve"
-        onclick="document.f.busy.value = 'busy'; document.f.out.value = solve(); document.f.busy.value = 'solve';"
-      />
-      <input
-        type="button"
-        value="more"
-        onclick="document.f.busy.value = 'busy'; document.f.out.value = more(); document.f.busy.value = 'solve';"
-      />
-      <input
-        type="button"
-        value="clear"
-        onclick="document.f.out.value = ''; document.f.sin.value = ''; document.f.sout.value = '';"
-      />
-      <br /><br />
-      <textarea name="out" cols="80" rows="25"></textarea>
-    </form>
-    <small>Based on Forth Wizard by Peter Sovietov. Extended for Bitcoin Cash VM bytecode by <a href="https://x.com/bitjson/">bitjson</a>.</small>
+        <textarea name="out" cols="80" rows="13"></textarea>
+      </form>
+      <form name="ops">
+        <label>
+          Maximum operations:
+          <input type="text" name="cl" value="6" />
+        </label>
+        <p>Specific transformations may be enabled or disabled below.</p>
+        <label class="checkbox-box">
+          <input type="checkbox" name="dup" checked />
+          <span>OP_DUP</span>
+        </label>
+        <label class="checkbox-box">
+          <input type="checkbox" name="dup2" checked />
+          <span>OP_2DUP</span>
+        </label>
+        <label class="checkbox-box">
+          <input type="checkbox" name="dup3" checked />
+          <span>OP_3DUP</span>
+        </label>
+        <label class="checkbox-box">
+          <input type="checkbox" name="nip" checked />
+          <span>OP_NIP</span>
+        </label>
+        <label class="checkbox-box">
+          <input type="checkbox" name="tuck" checked />
+          <span>OP_TUCK</span>
+        </label>
+        <label class="checkbox-box">
+          <input type="checkbox" name="drop" checked />
+          <span>OP_DROP</span>
+        </label>
+        <label class="checkbox-box">
+          <input type="checkbox" name="drop2" checked />
+          <span>OP_2DROP</span>
+        </label>
+        <label class="checkbox-box">
+          <input type="checkbox" name="swap" checked />
+          <span>OP_SWAP</span>
+        </label>
+        <label class="checkbox-box">
+          <input type="checkbox" name="swap2" checked />
+          <span>OP_2SWAP</span>
+        </label>
+        <label class="checkbox-box">
+          <input type="checkbox" name="over" checked />
+          <span>OP_OVER</span>
+        </label>
+        <label class="checkbox-box">
+          <input type="checkbox" name="over2" checked />
+          <span>OP_2OVER</span>
+        </label>
+        <label class="checkbox-box">
+          <input type="checkbox" name="rot" checked />
+          <span>OP_ROT</span>
+        </label>
+        <label class="checkbox-box">
+          <input type="checkbox" name="rot2" checked />
+          <span>OP_2ROT</span>
+        </label>
+        <label class="checkbox-box">
+          <input type="checkbox" name="toalt" checked />
+          <span>OP_TOALTSTACK</span>
+        </label>
+        <label class="checkbox-box">
+          <input type="checkbox" name="fromalt" checked />
+          <span>OP_FROMALTSTACK</span>
+        </label>
+        <label class="checkbox-box">
+          <input type="checkbox" name="pick2" checked />
+          <span>&lt;2&gt; OP_PICK</span>
+        </label>
+        <label class="checkbox-box">
+          <input type="checkbox" name="pick3" checked />
+          <span>&lt;3&gt; OP_PICK</span>
+        </label>
+        <label class="checkbox-box">
+          <input type="checkbox" name="pick4" checked />
+          <span>&lt;4&gt; OP_PICK</span>
+        </label>
+        <label class="checkbox-box">
+          <input type="checkbox" name="pick5" checked />
+          <span>&lt;5&gt; OP_PICK</span>
+        </label>
+        <label class="checkbox-box">
+          <input type="checkbox" name="roll3" checked />
+          <span>&lt;3&gt; OP_ROLL</span>
+        </label>
+        <label class="checkbox-box">
+          <input type="checkbox" name="roll4" checked />
+          <span>&lt;4&gt; OP_ROLL</span>
+        </label>
+        <label class="checkbox-box">
+          <input type="checkbox" name="roll5" checked />
+          <span>&lt;5&gt; OP_ROLL</span>
+        </label>
+        <input type="button" value="toggle all opcodes" onclick="xor_ops();" />
+      </form>
+      <small style="text-align: center; width: 100%">
+          Based on Forth Wizard by Peter Sovietov. Extended for Bitcoin Cash VM
+          bytecode by <a href="https://x.com/bitjson/">bitjson</a>. <a href="https://github.com/bitjson/bch-wizard">Source repo</a> on GitHub.</p>
+      </small>
+    </div>
   </body>
 </html>
